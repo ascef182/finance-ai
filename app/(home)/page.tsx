@@ -1,34 +1,36 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import Navbar from "../_components/navbar";
-import SummaryCards from "./_components/summary-cards";
-import TimeSelect from "./_components/time-select";
 import { isMatch } from "date-fns";
-import TransactionsPieChart from "./_components/transactions-pie-chart";
+import { redirect } from "next/navigation";
+
+import Navbar from "../_components/navbar";
+import { canUserAddTransaction } from "../_data/can-user-add-transaction";
 import { getDashboard } from "../_data/get-dashboard";
+import AiReportButton from "./_components/ai-report-button";
 import ExpensesPerCategory from "./_components/expenses-per-category";
 import LastTransactions from "./_components/last-transactions";
-import { canUserAddTransaction } from "../_data/can-user-add-transaction";
-import AiReportButton from "./_components/ai-report-button";
+import SummaryCards from "./_components/summary-cards";
+import TimeSelect from "./_components/time-select";
+import TransactionsPieChart from "./_components/transactions-pie-chart";
 
 interface HomeProps {
-  searchParams: {
+  searchParams: Promise<{
     month: string;
-  };
+  }>;
 }
 
-const Home = async ({ searchParams: { month } }: HomeProps) => {
+const Home = async ({ searchParams }: HomeProps) => {
+  const { month } = await searchParams;
   const { userId } = await auth();
   if (!userId) {
     redirect("/login");
   }
   const monthIsInvalid = !month || !isMatch(month, "MM");
   if (monthIsInvalid) {
-    redirect(`?month=${new Date().getMonth() + 1}`);
+    redirect(`?month=${String(new Date().getMonth() + 1).padStart(2, "0")}`);
   }
   const dashboard = await getDashboard(month);
   const userCanAddTransaction = await canUserAddTransaction();
-  const user = await clerkClient().users.getUser(userId);
+  const user = await (await clerkClient()).users.getUser(userId);
   return (
     <>
       <Navbar />

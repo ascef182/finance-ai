@@ -1,4 +1,21 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  TransactionCategory,
+  TransactionPaymentMethod,
+  TransactionType,
+} from "@prisma/client";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { upsertTransaction } from "../_actions/upsert-transaction";
+import {
+  TRANSACTION_CATEGORY_OPTIONS,
+  TRANSACTION_PAYMENT_METHOD_OPTIONS,
+  TRANSACTION_TYPE_OPTIONS,
+} from "../_constants/transactions";
+import { MoneyInput } from "./money-input";
 import { Button } from "./ui/button";
+import { DatePicker } from "./ui/date-picker";
 import {
   Dialog,
   DialogClose,
@@ -18,7 +35,6 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import { MoneyInput } from "./money-input";
 import {
   Select,
   SelectContent,
@@ -26,21 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import {
-  TRANSACTION_CATEGORY_OPTIONS,
-  TRANSACTION_PAYMENT_METHOD_OPTIONS,
-  TRANSACTION_TYPE_OPTIONS,
-} from "../_constants/transactions";
-import { DatePicker } from "./ui/date-picker";
-import { z } from "zod";
-import {
-  TransactionType,
-  TransactionCategory,
-  TransactionPaymentMethod,
-} from "@prisma/client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { upsertTransaction } from "../_actions/upsert-transaction";
 
 interface UpsertTransactionDialogProps {
   isOpen: boolean;
@@ -55,22 +56,22 @@ const formSchema = z.object({
   }),
   amount: z
     .number({
-      required_error: "O valor é obrigatório.",
+      error: "O valor é obrigatório.",
     })
     .positive({
       message: "O valor deve ser positivo.",
     }),
   type: z.nativeEnum(TransactionType, {
-    required_error: "O tipo é obrigatório.",
+    error: "O tipo é obrigatório.",
   }),
   category: z.nativeEnum(TransactionCategory, {
-    required_error: "A categoria é obrigatória.",
+    error: "A categoria é obrigatória.",
   }),
   paymentMethod: z.nativeEnum(TransactionPaymentMethod, {
-    required_error: "O método de pagamento é obrigatório.",
+    error: "O método de pagamento é obrigatório.",
   }),
   date: z.date({
-    required_error: "A data é obrigatória.",
+    error: "A data é obrigatória.",
   }),
 });
 

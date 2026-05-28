@@ -18,6 +18,7 @@
 
 # misc
 .DS_Store
+._*
 *.pem
 
 # debug
@@ -38,3 +39,9 @@ next-env.d.ts
 
 #docker
 .postgres-data
+
+# claude code (machine-specific local settings; HARDENING-PROGRESS.md is tracked)
+.claude/settings.local.json
+
+# cópia paralela antiga do projeto (tem .git próprio); não versionar
+/finance.ai/
