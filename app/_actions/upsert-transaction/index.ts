@@ -1,14 +1,16 @@
 "use server";
 
-import { db } from "@/app/_lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import {
   TransactionCategory,
   TransactionPaymentMethod,
   TransactionType,
 } from "@prisma/client";
-import { upsertTransactionSchema } from "./schema";
 import { revalidatePath } from "next/cache";
+
+import { db } from "@/app/_lib/prisma";
+
+import { upsertTransactionSchema } from "./schema";
 
 interface UpsertTransactionParams {
   id?: string;
@@ -26,12 +28,21 @@ export const upsertTransaction = async (params: UpsertTransactionParams) => {
   if (!userId) {
     throw new Error("Unauthorized");
   }
-  await db.transaction.upsert({
-    update: { ...params, userId },
-    create: { ...params, userId },
-    where: {
-      id: params?.id ?? "",
-    },
-  });
+  const { id, ...data } = params;
+  if (id) {
+    // Atualização escopada por dono: updateMany filtra por { id, userId }, então
+    // tentar editar a transação de outro usuário simplesmente não altera nada (count 0).
+    const { count } = await db.transaction.updateMany({
+      where: { id, userId },
+      data: { ...data, userId },
+    });
+    if (count === 0) {
+      throw new Error("Transaction not found");
+    }
+  } else {
+    await db.transaction.create({
+      data: { ...data, userId },
+    });
+  }
   revalidatePath("/transactions");
 };

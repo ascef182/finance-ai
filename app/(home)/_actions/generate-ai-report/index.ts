@@ -1,8 +1,12 @@
 "use server";
 
-import { db } from "@/app/_lib/prisma";
+import { openai } from "@ai-sdk/openai";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import OpenAI from "openai";
+import { generateText } from "ai";
+
+import { db } from "@/app/_lib/prisma";
+import { getMonthDateRange } from "@/app/_utils/date";
+
 import { GenerateAiReportSchema, generateAiReportSchema } from "./schema";
 
 const DUMMY_REPORT =
@@ -14,7 +18,7 @@ export const generateAiReport = async ({ month }: GenerateAiReportSchema) => {
   if (!userId) {
     throw new Error("Unauthorized");
   }
-  const user = await clerkClient().users.getUser(userId);
+  const user = await (await clerkClient()).users.getUser(userId);
   const hasPremiumPlan = user.publicMetadata.subscriptionPlan === "premium";
   if (!hasPremiumPlan) {
     throw new Error("You need a premium plan to generate AI reports");
@@ -23,15 +27,14 @@ export const generateAiReport = async ({ month }: GenerateAiReportSchema) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return DUMMY_REPORT;
   }
-  const openAi = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  // pegar as transações do mês recebido
+  // pegar as transações do mês recebido (escopadas pelo usuário autenticado)
+  const { gte, lt } = getMonthDateRange(month);
   const transactions = await db.transaction.findMany({
     where: {
+      userId,
       date: {
-        gte: new Date(`2024-${month}-01`),
-        lt: new Date(`2024-${month}-31`),
+        gte,
+        lt,
       },
     },
   });
@@ -43,8 +46,8 @@ export const generateAiReport = async ({ month }: GenerateAiReportSchema) => {
         `${transaction.date.toLocaleDateString("pt-BR")}-R$${transaction.amount}-${transaction.type}-${transaction.category}`,
     )
     .join(";")}`;
-  const completion = await openAi.chat.completions.create({
-    model: "gpt-4o-mini",
+  const { text } = await generateText({
+    model: openai("gpt-4o-mini"),
     messages: [
       {
         role: "system",
@@ -57,6 +60,5 @@ export const generateAiReport = async ({ month }: GenerateAiReportSchema) => {
       },
     ],
   });
-  // pegar o relatório gerado pelo ChatGPT e retornar para o usuário
-  return completion.choices[0].message.content;
+  return text;
 };
