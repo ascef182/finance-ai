@@ -5,6 +5,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { generateText } from "ai";
 
 import { db } from "@/app/_lib/prisma";
+import { aiReportRateLimiter, redis } from "@/app/_lib/ratelimit";
 import { getMonthDateRange } from "@/app/_utils/date";
 
 import { GenerateAiReportSchema, generateAiReportSchema } from "./schema";
@@ -27,6 +28,26 @@ export const generateAiReport = async ({ month }: GenerateAiReportSchema) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return DUMMY_REPORT;
   }
+
+  // Cache: relatórios do mesmo mês/usuário são reaproveitados (TTL 24h) sem
+  // gastar cota nem chamar o modelo novamente.
+  const year = new Date().getFullYear();
+  const cacheKey = `ai-report:${userId}:${year}-${month}`;
+  if (redis) {
+    const cached = await redis.get<string>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  // Cota mensal por usuário (operação cara). Um cache miss consome a cota.
+  const { success } = await aiReportRateLimiter.limit(userId);
+  if (!success) {
+    throw new Error(
+      "Você atingiu o limite mensal de relatórios de IA. Tente novamente mais tarde.",
+    );
+  }
+
   // pegar as transações do mês recebido (escopadas pelo usuário autenticado)
   const { gte, lt } = getMonthDateRange(month);
   const transactions = await db.transaction.findMany({
@@ -60,5 +81,10 @@ export const generateAiReport = async ({ month }: GenerateAiReportSchema) => {
       },
     ],
   });
+  if (redis) {
+    // TTL de 24h: equilibra reaproveitamento e atualização conforme novas
+    // transações do mês entram.
+    await redis.set(cacheKey, text, { ex: 60 * 60 * 24 });
+  }
   return text;
 };
