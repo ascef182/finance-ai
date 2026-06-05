@@ -30,7 +30,7 @@
 - `eslint.config.mjs`: corrigida a regra `no-restricted-imports` (estava bloqueando `@/app/_lib/prisma` em TODO server action; agora liberada em `_actions/**`,`_data/**`,`_lib/**`,`api/**`) + `ignores` para lixo (`finance.ai/**`, `**/._*`, `.next/**`).
 - `.npmrc`: `node-linker=hoisted` (necessário no exFAT; pode permanecer no NTFS sem dano).
 
-**Status de verificação:** `tsc --noEmit` limpo; `pnpm lint` só com 2 erros pré-existentes (`require()` em `tailwind.config.ts`) + warnings de import-sort. `pnpm build` AINDA NÃO rodou limpo (bloqueado pelo dev server + exFAT — resolver após mover para C:).
+**Status de verificação (ATUALIZADO — sessão NTFS em `D:`):** `tsc --noEmit` limpo; `pnpm lint` agora com **0 erros** (os 2 `require()` do `tailwind.config.ts` foram convertidos para import ESM) + warnings de import-sort (não bloqueiam CI); **`pnpm build` RODA LIMPO** no NTFS (9 rotas) — o bloqueio do exFAT foi eliminado. `pnpm test` (vitest) verde: 11 testes em 3 arquivos.
 
 ---
 
@@ -54,24 +54,24 @@
 
 ## ▶️ Próximos passos (retomar aqui)
 
-### Fechar verificação do Bloco A
-1. Parar qualquer `pnpm dev`, limpar `.next`, rodar `$env:CI='true'; pnpm build`.
-2. `pnpm exec prisma migrate dev --name security_indexes_and_goal` (precisa de DB acessível) para aplicar índices + model `Goal`.
-3. Teste funcional de isolamento: 2 usuários; cada relatório de IA só com as próprias transações; tentar editar transação de outro usuário → rejeitado.
+### ✅ Migração + testes reais de isolamento — CONCLUÍDOS
+- `docker compose up -d` + `pnpm exec prisma migrate dev --name security_indexes_and_goal` aplicados com sucesso (`20260605215228_security_indexes_and_goal`).
+- `pnpm test:isolation` (script `scripts/test-isolation.ts`, roda direto contra o banco) → **12/12 testes passaram**: A1 (escopo de `findMany` por userId), A3 (edição cruzada bloqueada por `updateMany({id, userId})`), metas (delete cruzado bloqueado), B3 (paginação cursor sem repetição de itens).
 
-### Bloco B — escala (Vercel/Neon)
-- B1 índices: já no schema, falta migrar (passo acima).
-- B2 Neon pooling: `.env` (pooled+direct) já suportado por schema/prisma.config/prisma.ts.
-- B3 **paginação cursor-based**: criar `app/_data/get-transactions/` (escopado por `userId`, `take`+`cursor`) e ajustar `app/transactions/page.tsx` + `DataTable` (hoje carrega TODAS as transações).
-- B4 **rate limiting**: `pnpm add @upstash/ratelimit @upstash/redis`; helper `app/_lib/ratelimit.ts`; aplicar em server actions, em especial `generateAiReport` (cota mensal/usuário + cache do relatório no Redis com TTL) e no webhook do Stripe.
+## ✅ Bloco B — CONCLUÍDO (código, build verde)
+- B1 índices: no schema (falta só rodar a migração — passo acima).
+- B2 Neon pooling: suportado por schema/prisma.config/prisma.ts; reorg do `.env` (pooled + `DIRECT_URL`) é tarefa de infra do usuário.
+- B3 **paginação cursor-based**: `app/_data/get-transactions/` + server action `app/transactions/_actions/load-more-transactions/` + wrapper client `app/transactions/_components/transactions-data-table.tsx` ("Carregar mais"). `transactions/page.tsx` agora pagina (20/página) em vez de carregar tudo.
+- B4 **rate limiting**: `@upstash/ratelimit` + `@upstash/redis`; helper `app/_lib/ratelimit.ts` (degrada para "sempre permitir" sem Upstash). Aplicado em `generateAiReport` (cota mensal + cache de relatório no Redis, TTL 24h) e no webhook do Stripe (flood por IP → 429).
 
-### Bloco C — operação/qualidade
-- C1 `@sentry/nextjs` + logging; `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`; `app/api/health/route.ts` (checa DB).
-- C2 testes: `vitest` + `@testing-library/react` (cobrir isolamento por `userId` de A1/A3); `playwright` (auth, criar transação, checkout).
-- C3 CI/CD: GitHub Actions (lint → typecheck → build → test) + Vercel Preview/Prod; separar ambientes via env vars do projeto Vercel.
-- C4 metas: model `Goal` já no schema; falta `app/goals/` (página + Navbar), `app/_actions/upsert-goal/` (+schema Zod) e `app/_data/get-goals/`, todos escopados por `userId`; UI com `@radix-ui/react-progress`.
-- Limpeza extra: `tailwind.config.ts` usa `require()` (2 erros de lint) — converter para import ou override no eslint.
+## ✅ Bloco C — CONCLUÍDO (exceto Sentry, adiado pelo usuário)
+- C1 observabilidade: `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx`, `app/api/health/route.ts` (checa DB via `SELECT 1`). **Sentry ADIADO** (risco Next 16/Turbopack + precisa de DSN).
+- C2 testes: `vitest` configurado (`vitest.config.ts`, `vitest.setup.ts`). 11 testes verdes cobrindo isolamento por `userId` de A1 (`generateAiReport`), A3 (`upsertTransaction`) e metas (`upsertGoal`). Playwright não incluído nesta rodada.
+- C3 CI/CD: `.github/workflows/ci.yml` (install → prisma generate → lint → typecheck → test → build, com env fictício no build). Vercel: tarefa de infra do usuário.
+- C4 metas: `app/goals/` (página + card com `@radix-ui/react-progress`), `app/_actions/upsert-goal/` (+ schema Zod) e `app/_actions/delete-goal/`, `app/_data/get-goals/` — todos escopados por `userId`. Link "Metas" na Navbar.
+- Limpeza: `tailwind.config.ts` convertido de `require()` para import ESM (0 erros de lint).
 
 ## Tarefas (status)
-- [x] A1+A2  [x] A3  [x] A4  [x] A5  (código; build final pendente)
-- [ ] Bloco B  [ ] Bloco C
+- [x] A1+A2  [x] A3  [x] A4  [x] A5  (código verificado por tsc/lint/build; **falta só migrar + teste funcional**)
+- [x] Bloco B  (B1 código pronto, falta migração)
+- [x] Bloco C  (Sentry adiado; Playwright fora desta rodada)
