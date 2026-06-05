@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import AddTransactionButton from "../_components/add-transaction-button";
 import Navbar from "../_components/navbar";
-import { ScrollArea } from "../_components/ui/scroll-area";
 import { canUserAddTransaction } from "../_data/can-user-add-transaction";
 import { getTransactions } from "../_data/get-transactions";
 import TransactionsDataTable from "./_components/transactions-data-table";
@@ -24,12 +23,12 @@ const TransactionsPage = async () => {
           <h1 className="text-2xl font-bold">Transações</h1>
           <AddTransactionButton userCanAddTransaction={userCanAddTransaction} />
         </div>
-        <ScrollArea>
+        <div className="overflow-x-auto rounded-md">
           <TransactionsDataTable
             initialTransactions={transactions}
             initialCursor={nextCursor}
           />
-        </ScrollArea>
+        </div>
       </div>
     </>
   );

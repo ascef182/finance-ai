@@ -1,6 +1,5 @@
 "use client";
 
-import { Goal } from "@prisma/client";
 import { PencilIcon, TrashIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 
@@ -14,6 +13,7 @@ import {
 } from "@/app/_components/ui/card";
 import { Progress } from "@/app/_components/ui/progress";
 import { TRANSACTION_CATEGORY_LABELS } from "@/app/_constants/transactions";
+import { getGoals } from "@/app/_data/get-goals";
 
 import UpsertGoalDialog from "./upsert-goal-dialog";
 
@@ -23,16 +23,18 @@ const formatCurrency = (value: number) =>
     currency: "BRL",
   }).format(value);
 
+type SerializedGoal = Awaited<ReturnType<typeof getGoals>>[number];
+
 interface GoalCardProps {
-  goal: Goal;
+  goal: SerializedGoal;
 }
 
 const GoalCard = ({ goal }: GoalCardProps) => {
   const [editIsOpen, setEditIsOpen] = useState(false);
   const [isDeleting, startDelete] = useTransition();
 
-  const current = Number(goal.currentAmount);
-  const target = Number(goal.targetAmount);
+  const current = goal.currentAmount;
+  const target = goal.targetAmount;
   const percentage =
     target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
 

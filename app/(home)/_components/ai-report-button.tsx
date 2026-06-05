@@ -1,5 +1,10 @@
 "use client";
 
+import { BotIcon, Loader2Icon } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import Markdown from "react-markdown";
+
 import { Button } from "@/app/_components/ui/button";
 import {
   Dialog,
@@ -11,12 +16,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/app/_components/ui/dialog";
-import { BotIcon, Loader2Icon } from "lucide-react";
-import { generateAiReport } from "../_actions/generate-ai-report";
-import { useState } from "react";
 import { ScrollArea } from "@/app/_components/ui/scroll-area";
-import Markdown from "react-markdown";
-import Link from "next/link";
+
+import { generateAiReport } from "../_actions/generate-ai-report";
 
 interface AiReportButtonProps {
   hasPremiumPlan: boolean;
@@ -52,7 +54,7 @@ const AiReportButton = ({ month, hasPremiumPlan }: AiReportButtonProps) => {
           <BotIcon />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[600px]">
+      <DialogContent className="w-[95vw] max-w-[600px]">
         {hasPremiumPlan ? (
           <>
             <DialogHeader>
@@ -62,7 +64,7 @@ const AiReportButton = ({ month, hasPremiumPlan }: AiReportButtonProps) => {
                 sobre suas finanças.
               </DialogDescription>
             </DialogHeader>
-            <ScrollArea className="prose max-h-[450px] text-white prose-h3:text-white prose-h4:text-white prose-strong:text-white">
+            <ScrollArea className="prose max-h-[50vh] text-white prose-h3:text-white prose-h4:text-white prose-strong:text-white md:max-h-[450px]">
               <Markdown>{report}</Markdown>
             </ScrollArea>
             <DialogFooter>

@@ -65,6 +65,7 @@ const UpsertGoalDialog = ({
 }: UpsertGoalDialogProps) => {
   const form = useForm<GoalFormSchema>({
     resolver: zodResolver(formSchema),
+    mode: "onSubmit",
     defaultValues: defaultValues ?? {
       name: "",
       targetAmount: 0,
@@ -129,7 +130,7 @@ const UpsertGoalDialog = ({
                       placeholder="Digite o valor-alvo..."
                       value={field.value}
                       onValueChange={({ floatValue }) =>
-                        field.onChange(floatValue)
+                        field.onChange(floatValue ?? 0)
                       }
                       onBlur={field.onBlur}
                       disabled={field.disabled}
@@ -201,7 +202,7 @@ const UpsertGoalDialog = ({
                   Cancelar
                 </Button>
               </DialogClose>
-              <Button type="submit">
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 {isUpdate ? "Atualizar" : "Adicionar"}
               </Button>
             </DialogFooter>
