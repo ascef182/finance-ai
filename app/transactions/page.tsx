@@ -1,23 +1,19 @@
-import { db } from "../_lib/prisma";
-import { DataTable } from "../_components/ui/data-table";
-import { transactionColumns } from "./_columns";
-import AddTransactionButton from "../_components/add-transaction-button";
-import Navbar from "../_components/navbar";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+
+import AddTransactionButton from "../_components/add-transaction-button";
+import Navbar from "../_components/navbar";
 import { ScrollArea } from "../_components/ui/scroll-area";
 import { canUserAddTransaction } from "../_data/can-user-add-transaction";
+import { getTransactions } from "../_data/get-transactions";
+import TransactionsDataTable from "./_components/transactions-data-table";
 
 const TransactionsPage = async () => {
   const { userId } = await auth();
   if (!userId) {
     redirect("/login");
   }
-  const transactions = await db.transaction.findMany({
-    where: {
-      userId,
-    },
-  });
+  const { transactions, nextCursor } = await getTransactions();
   const userCanAddTransaction = await canUserAddTransaction();
   return (
     <>
@@ -29,7 +25,10 @@ const TransactionsPage = async () => {
           <AddTransactionButton userCanAddTransaction={userCanAddTransaction} />
         </div>
         <ScrollArea>
-          <DataTable columns={transactionColumns} data={transactions} />
+          <TransactionsDataTable
+            initialTransactions={transactions}
+            initialCursor={nextCursor}
+          />
         </ScrollArea>
       </div>
     </>
