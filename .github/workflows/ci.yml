@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "hardening/**"]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm exec prisma generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+        env:
+          # Valores fictícios apenas para o build passar a validação de env.
+          # Nenhuma conexão real é feita durante o build (rotas são dinâmicas).
+          DATABASE_URL: postgresql://user:pass@localhost:5432/test
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
+          CLERK_SECRET_KEY: sk_test_dummy
+          STRIPE_SECRET_KEY: sk_test_dummy
+          STRIPE_PREMIUM_PLAN_PRICE_ID: price_dummy
+          STRIPE_WEBHOOK_SECRET: whsec_dummy
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_dummy
+          NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL: https://example.com/portal
