@@ -1,16 +1,16 @@
 "use client";
 
-import { Transaction } from "@prisma/client";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/app/_components/ui/button";
 import { DataTable } from "@/app/_components/ui/data-table";
+import { SerializedTransaction } from "@/app/_types/serialized-transaction";
 
 import { loadMoreTransactions } from "../_actions/load-more-transactions";
 import { transactionColumns } from "../_columns";
 
 interface TransactionsDataTableProps {
-  initialTransactions: Transaction[];
+  initialTransactions: SerializedTransaction[];
   initialCursor: string | null;
 }
 
@@ -18,7 +18,8 @@ const TransactionsDataTable = ({
   initialTransactions,
   initialCursor,
 }: TransactionsDataTableProps) => {
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const [transactions, setTransactions] =
+    useState<SerializedTransaction[]>(initialTransactions);
   const [cursor, setCursor] = useState(initialCursor);
   const [isPending, startTransition] = useTransition();
 

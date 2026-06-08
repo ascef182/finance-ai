@@ -1,17 +1,19 @@
 "use client";
 
-import { Transaction } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
-import TransactionTypeBadge from "../_components/type-badge";
-import { Button } from "@/app/_components/ui/button";
 import { TrashIcon } from "lucide-react";
+
+import { Button } from "@/app/_components/ui/button";
 import {
   TRANSACTION_CATEGORY_LABELS,
   TRANSACTION_PAYMENT_METHOD_LABELS,
 } from "@/app/_constants/transactions";
-import EditTransactionButton from "../_components/edit-transaction-button";
+import { SerializedTransaction } from "@/app/_types/serialized-transaction";
 
-export const transactionColumns: ColumnDef<Transaction>[] = [
+import EditTransactionButton from "../_components/edit-transaction-button";
+import TransactionTypeBadge from "../_components/type-badge";
+
+export const transactionColumns: ColumnDef<SerializedTransaction>[] = [
   {
     accessorKey: "name",
     header: "Nome",
@@ -52,7 +54,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
       new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
-      }).format(Number(transaction.amount)),
+      }).format(transaction.amount),
   },
   {
     accessorKey: "actions",

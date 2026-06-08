@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
-import { Transaction } from "@prisma/client";
 
 import { db } from "@/app/_lib/prisma";
+import { SerializedTransaction } from "@/app/_types/serialized-transaction";
 
 export const TRANSACTIONS_PAGE_SIZE = 20;
 
@@ -12,7 +12,7 @@ export interface GetTransactionsParams {
 }
 
 export interface GetTransactionsResult {
-  transactions: Transaction[];
+  transactions: SerializedTransaction[];
   /** id para a próxima página, ou null quando não há mais resultados. */
   nextCursor: string | null;
 }
@@ -40,7 +40,11 @@ export const getTransactions = async ({
   });
 
   const hasMore = rows.length > take;
-  const transactions = hasMore ? rows.slice(0, take) : rows;
+  const sliced = hasMore ? rows.slice(0, take) : rows;
+  const transactions = sliced.map((t) => ({
+    ...t,
+    amount: Number(t.amount),
+  }));
   const nextCursor = hasMore ? transactions[transactions.length - 1].id : null;
 
   return { transactions, nextCursor };
