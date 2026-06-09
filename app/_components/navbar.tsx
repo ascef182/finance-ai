@@ -29,7 +29,7 @@ const Navbar = () => {
     pathname === href ? "font-bold text-primary" : "text-muted-foreground";
 
   return (
-    <nav className="flex items-center justify-between border-b border-solid px-4 py-4 md:px-8">
+    <nav className="flex w-full items-center justify-between border-b border-solid px-4 py-4 md:px-8">
       {/* ESQUERDA */}
       <div className="flex items-center gap-4 md:gap-10">
         <Image src="/logo.svg" width={173} height={39} alt="Finance AI" />

@@ -1,15 +1,16 @@
 "use client";
 
 import { ArrowDownUpIcon } from "lucide-react";
-import { Button } from "./ui/button";
 import { useState } from "react";
-import UpsertTransactionDialog from "./upsert-transaction-dialog";
+
+import { Button } from "./ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import UpsertTransactionDialog from "./upsert-transaction-dialog";
 
 interface AddTransactionButtonProps {
   userCanAddTransaction?: boolean;
@@ -30,7 +31,7 @@ const AddTransactionButton = ({
               onClick={() => setDialogIsOpen(true)}
               disabled={!userCanAddTransaction}
             >
-              Adicionar transação
+              <span className="hidden sm:inline">Adicionar transação</span>
               <ArrowDownUpIcon />
             </Button>
           </TooltipTrigger>

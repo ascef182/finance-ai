@@ -14,8 +14,8 @@ const ExportCsvButton = () => {
 
   return (
     <Button variant="outline" onClick={handleExport}>
-      <DownloadIcon className="mr-2 h-4 w-4" />
-      Exportar CSV
+      <DownloadIcon className="h-4 w-4" />
+      <span className="hidden sm:inline">Exportar CSV</span>
     </Button>
   );
 };
