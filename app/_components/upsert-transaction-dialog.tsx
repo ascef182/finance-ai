@@ -85,6 +85,8 @@ const UpsertTransactionDialog = ({
 }: UpsertTransactionDialogProps) => {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
     defaultValues: defaultValues ?? {
       amount: 1,
       category: TransactionCategory.OTHER,

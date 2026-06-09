@@ -66,6 +66,7 @@ const UpsertGoalDialog = ({
   const form = useForm<GoalFormSchema>({
     resolver: zodResolver(formSchema),
     mode: "onSubmit",
+    reValidateMode: "onSubmit",
     defaultValues: defaultValues ?? {
       name: "",
       targetAmount: 0,
