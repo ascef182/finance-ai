@@ -1,8 +1,26 @@
 import { auth } from "@clerk/nextjs/server";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { LoginButton } from "./_components/login-button";
+
+export const metadata: Metadata = {
+  title: "Entrar",
+  description:
+    "Entre na Finance-Ai e controle suas finanças com insights gerados por IA — monitore movimentações, defina metas e organize seu orçamento em um só lugar.",
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Finance-Ai",
+  applicationCategory: "FinanceApplication",
+  operatingSystem: "Web",
+  description:
+    "Plataforma de gestão financeira que usa IA para monitorar suas movimentações e oferecer insights personalizados, facilitando o controle do seu orçamento.",
+  url: "https://financeai.caza-tech.com/login",
+};
 
 const LoginPage = async () => {
   const { userId } = await auth();
@@ -11,6 +29,10 @@ const LoginPage = async () => {
   }
   return (
     <div className="grid h-full grid-cols-2">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ESQUERDA */}
       <div className="mx-auto flex h-full max-w-[550px] flex-col justify-center p-8">
         <Image

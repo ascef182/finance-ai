@@ -1,0 +1,19 @@
+# Finance-Ai
+
+> Plataforma de gestão financeira pessoal que usa IA para monitorar movimentações, gerar relatórios e ajudar o usuário a organizar seu orçamento.
+
+Finance-Ai é um SaaS de finanças pessoais em português (Brasil). O usuário registra suas transações (receitas e despesas), define metas financeiras, acompanha um dashboard com estatísticas do mês e recebe relatórios gerados por IA a partir dos próprios dados financeiros. Autenticação via Google (Clerk). Plano gratuito com uso limitado e plano Premium via assinatura recorrente (Stripe).
+
+## Principais funcionalidades
+- Registro e categorização de transações (receita, despesa, cartão, PIX, boleto, transferência)
+- Dashboard mensal com resumo de saldo, receitas e despesas
+- Metas financeiras com acompanhamento de progresso
+- Relatório financeiro gerado por IA com base no histórico de transações do usuário
+- Exportação de transações
+- Plano Premium com recursos adicionais (assinatura via Stripe)
+
+## Links
+- [Acessar / Entrar](https://financeai.caza-tech.com/login): tela de login (Google)
+
+## Público-alvo
+Pessoas físicas no Brasil buscando organizar finanças pessoais com o auxílio de IA — controle de gastos, metas de poupança e relatórios automáticos, sem precisar de planilhas manuais.

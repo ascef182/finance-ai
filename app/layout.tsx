@@ -9,9 +9,51 @@ const mulish = Mulish({
   subsets: ["latin-ext"],
 });
 
+const siteUrl = "https://financeai.caza-tech.com";
+const siteDescription =
+  "Plataforma de gestão financeira que usa IA para monitorar suas movimentações e oferecer insights personalizados, facilitando o controle do seu orçamento.";
+
 export const metadata: Metadata = {
-  title: "Finance-Ai",
-  description: "Gestão Financeira",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Finance-Ai — Gestão financeira pessoal com IA",
+    template: "%s | Finance-Ai",
+  },
+  description: siteDescription,
+  keywords: [
+    "gestão financeira",
+    "finanças pessoais",
+    "controle de gastos",
+    "orçamento pessoal",
+    "IA financeira",
+    "finance ai",
+  ],
+  openGraph: {
+    title: "Finance-Ai — Gestão financeira pessoal com IA",
+    description: siteDescription,
+    url: siteUrl,
+    siteName: "Finance-Ai",
+    locale: "pt_BR",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Finance-Ai",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Finance-Ai — Gestão financeira pessoal com IA",
+    description: siteDescription,
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -20,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body className={`${mulish.className} dark antialiased`}>
         <ClerkProvider
           appearance={{
