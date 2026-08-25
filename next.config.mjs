@@ -3,15 +3,20 @@
 // Content-Security-Policy compatível com Clerk (auth) e Stripe (checkout/portal).
 // 'unsafe-inline'/'unsafe-eval' em script-src são necessários para o runtime do
 // Next/Clerk; podem ser endurecidos com nonces numa etapa futura.
+//
+// Clerk em produção serve o clerk-js e a API de auth pelo domínio customizado
+// (clerk.financeai.caza-tech.com), não mais por *.clerk.accounts.dev — que é
+// só o domínio de desenvolvimento. Mantemos *.clerk.accounts.dev também para
+// não quebrar previews/dev que ainda rodam com a chave de teste.
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://challenges.cloudflare.com https://js.stripe.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.financeai.caza-tech.com https://challenges.cloudflare.com https://js.stripe.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' blob: data: https://*.clerk.com https://img.clerk.com",
   "font-src 'self' data:",
   "worker-src 'self' blob:",
-  "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://api.stripe.com https://*.upstash.io",
-  "frame-src 'self' https://*.clerk.accounts.dev https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
+  "connect-src 'self' https://*.clerk.accounts.dev https://clerk.financeai.caza-tech.com https://*.clerk.com https://api.stripe.com https://*.upstash.io",
+  "frame-src 'self' https://*.clerk.accounts.dev https://clerk.financeai.caza-tech.com https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
